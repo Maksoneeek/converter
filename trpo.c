@@ -12,13 +12,13 @@ enum Action
   LINK,
   LINK_TEXT,
   BOLD,
+  IMG,
   NO_ACTION
 };
 
 char* concat(char *s1, char *s2) {
   size_t len1 = strlen(s1);
   size_t len2 = strlen(s2);                      
-  printf("код-во символов в ласт строке - %ld\n",len1);
   char *result = 	malloc(len1 + len2 + 3);
   /*if (!result) {
       fprintf(stderr, "malloc() failed: insufficient memory!\n");
@@ -200,6 +200,24 @@ void convertBold(char* source) {
   }
   
 }
+void convertImg(char *source){
+  char arrayHtmlImgStart1[10] = "<img src=\"" ;
+	char arrayHtmlImgStart2[3] = "\" ";
+	char arrayHtmlImgEnd2[3] = "\">";
+	char *path = malloc(Pos(source,")") - Pos(source,"](")-2);
+  char *text = malloc(Pos(source,"]") - Pos(source,"![")+2);
+
+  getSubString(source,path,Pos(source,"](")+1,Pos(source,")")-1);
+  getSubString(source,text,Pos(source,"![")+1,Pos(source,"]")-1);
+
+  char *convertedElement = concats(arrayHtmlImgStart1,path,arrayHtmlImgStart2);
+  convertedElement = concats(convertedElement,"alt=\"",text);
+  convertedElement = concat(convertedElement,arrayHtmlImgEnd2);
+
+  char* result = convertStringElement(source, convertedElement, Pos(source,"!["), Pos(source,")")-1 );
+
+  printf("%s\n",result);
+}
 
 void doAction(char* source, enum Action action) {
   switch (action)
@@ -213,20 +231,24 @@ void doAction(char* source, enum Action action) {
   case BOLD:
     convertBold(source);
     break;
+  case IMG:
+    convertImg(source);
+    break;
   default:
     break;
   }
 }
 
 enum Action getAction(char* source) {
-  if (strstr(source, "](") != NULL){
+  if (strstr(source,"![")!= NULL){
+    return IMG;
+  }else if (strstr(source, "](") != NULL){
     return LINK_TEXT;
   } else if (strstr(source, "<") != NULL && strstr(source, ">") != NULL) {
     return LINK;
   } else if (strstr(source, "**") != NULL) {
     return BOLD;
   }
-
   return NO_ACTION;
 }
 
@@ -281,7 +303,7 @@ int main()
     posScript++;
   }*/
 
-  char* str = "test гы гы гы";
+  char* str = "asdsaddasd![Alt text](//placehold.it/150x100)asdsadasdsa";
   // char* str = "fefew [Solid](https://cldup.com/dTxpPi9lDf.thumb.png) ewfwefewf";
   runScript(str);
 }
