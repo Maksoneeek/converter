@@ -5,6 +5,7 @@
 char fileArray[1024][1024] = {};
 
 int posScript = 0;
+int countStr = 0;
 
 // Энам для обозначения типа дейяствия
 enum Action
@@ -18,43 +19,46 @@ enum Action
   NO_ACTION
 };
 
-char* concat(char *s1, char *s2) {
+char *concat(char *s1, char *s2)
+{
   size_t len1 = strlen(s1);
-  size_t len2 = strlen(s2);                      
-  char *result = 	malloc(len1 + len2 + 3);
+  size_t len2 = strlen(s2);
+  char *result = malloc(len1 + len2 + 3);
   /*if (!result) {
       fprintf(stderr, "malloc() failed: insufficient memory!\n");
       return NULL;
   }*/
 
   memcpy(result, s1, len1);
-  memcpy(result + len1, s2, len2 + 1);    
+  memcpy(result + len1, s2, len2 + 1);
 
   return result;
 }
 
-char* concats(char *s1, char *s2, char *s3) {
+char *concats(char *s1, char *s2, char *s3)
+{
 
   size_t len1 = strlen(s1);
-  size_t len2 = strlen(s2) ;
-  size_t len3 = strlen(s3);                      
-  char *result = malloc(len1 + len2 + len3+1);
+  size_t len2 = strlen(s2);
+  size_t len3 = strlen(s3);
+  char *result = malloc(len1 + len2 + len3 + 1);
 
-  if (!result) {
-      fprintf(stderr, "malloc() failed: insufficient memory!\n");
-      return NULL;
+  if (!result)
+  {
+    fprintf(stderr, "malloc() failed: insufficient memory!\n");
+    return NULL;
   }
 
   memcpy(result, s1, len1);
   memcpy(result + len1, s2, len2);
-  memcpy(result + len1 + len2, s3, len3 + 1);    
+  memcpy(result + len1 + len2, s3, len3 + 1);
 
   return result;
 }
 
 int Pos(const char *const str1, const char *const str2)
 {
-  //size_t len = strlen(str1);
+  // size_t len = strlen(str1);
   int res = -1;
   int flag = 0;
   int i = 0;
@@ -138,167 +142,222 @@ char *getSubString(const char str[], char destination[], int startPos, int endPo
   }
   return destination;
 }
-int valueList(char *source){
+int valueList(char *source)
+{
   int value = 0;
-  if ((source[0] >= '1') && (source[0] <= '9') && (Pos (source, ". ") < 2))   
-	{
-		value = 1;
-	}
-	if ((Pos(source,"+ ") < 1) ||  (Pos(source,"- ") < 1) || (Pos(source,"* ") < 1))
-	{
-		value = 2;
-	}
-	return value;
+  if ((source[0] >= '1') && (source[0] <= '9') && (Pos(source, ". ") < 2))
+  {
+    value = 1;
+  }
+  if ((Pos(source, "+ ") < 1) || (Pos(source, "- ") < 1) || (Pos(source, "* ") < 1))
+  {
+    value = 2;
+  }
+  return value;
 }
 
-void convertList(char *source){
+void convertList(char *source)
+{
   int posFinish = 0;
   int value = valueList(source);
   int lenStart = 0;
-  char *text = malloc(strlen(source) - lenStart-2);
-  
-  if (value == 1){
+  char *text = malloc(strlen(source) - lenStart - 2);
+
+  if (value == 1)
+  {
     lenStart = 3;
   }
-  if (value == 2){
-    lenStart = 2;    
+  if (value == 2)
+  {
+    lenStart = 2;
   }
-  
-  getSubString(source,text,lenStart,strlen(source)-2);
 
-  char *result = concats("<li>",text,"</li>");
+  getSubString(source, text, lenStart, strlen(source) - 2);
+
+  char *result = concats("<li>", text, "</li>");
 
   strcpy(fileArray[posScript], result);
 }
 
-int valueHeader(char *source){
+int valueHeader(char *source)
+{
   int value = 0;
   char *arrayHeaders[6];
   arrayHeaders[0] = "# ";
   arrayHeaders[1] = "## ";
   arrayHeaders[2] = "### ";
   arrayHeaders[3] = "#### ";
-  arrayHeaders[4]= "##### ";
-  arrayHeaders[5]= "###### ";
+  arrayHeaders[4] = "##### ";
+  arrayHeaders[5] = "###### ";
 
-	for (int i = 0; i < 6; i++)
-	{
-		if ((strstr(source,arrayHeaders[i]) != NULL) && (Pos(source,arrayHeaders[i]) == 0))
-		{
-			value = i+1;
-				
-		}		
-	}
+  for (int i = 0; i < 6; i++)
+  {
+    if ((strstr(source, arrayHeaders[i]) != NULL) && (Pos(source, arrayHeaders[i]) == 0))
+    {
+      value = i + 1;
+    }
+  }
 
-	return value;
+  return value;
 }
-void convertHeader(char *source){
+void convertHeader(char *source)
+{
   int value = valueHeader(source);
-	char *arrayHtmlHeadersStart[6];
-	arrayHtmlHeadersStart[0] = "<h1>";
-	arrayHtmlHeadersStart[1] = "<h2>";
-	arrayHtmlHeadersStart[2] = "<h3>";
-	arrayHtmlHeadersStart[3] = "<h4>";
-	arrayHtmlHeadersStart[4] = "<h5>";
-	arrayHtmlHeadersStart[5] = "<h6>";
-	char *arrayHtmlHeadersEnd[6];
-	arrayHtmlHeadersEnd[0] = "</h1>";
-	arrayHtmlHeadersEnd[1] = "</h2>";
-	arrayHtmlHeadersEnd[2] = "</h3>";
-	arrayHtmlHeadersEnd[3] = "</h4>";
-	arrayHtmlHeadersEnd[4] = "</h5>";
-	arrayHtmlHeadersEnd[5] = "</h6>";
+  char *arrayHtmlHeadersStart[6];
+  arrayHtmlHeadersStart[0] = "<h1>";
+  arrayHtmlHeadersStart[1] = "<h2>";
+  arrayHtmlHeadersStart[2] = "<h3>";
+  arrayHtmlHeadersStart[3] = "<h4>";
+  arrayHtmlHeadersStart[4] = "<h5>";
+  arrayHtmlHeadersStart[5] = "<h6>";
+  char *arrayHtmlHeadersEnd[6];
+  arrayHtmlHeadersEnd[0] = "</h1>";
+  arrayHtmlHeadersEnd[1] = "</h2>";
+  arrayHtmlHeadersEnd[2] = "</h3>";
+  arrayHtmlHeadersEnd[3] = "</h4>";
+  arrayHtmlHeadersEnd[4] = "</h5>";
+  arrayHtmlHeadersEnd[5] = "</h6>";
   size_t len = strlen(source);
   char *text = malloc(len - value);
 
-  getSubString(source, text,value , strlen(source)-2);
-  char *result = concats(arrayHtmlHeadersStart[value-1],text, arrayHtmlHeadersEnd[value-1]);
-  
+  getSubString(source, text, value, strlen(source) - 2);
+  char *result = concats(arrayHtmlHeadersStart[value - 1], text, arrayHtmlHeadersEnd[value - 1]);
+
   strcpy(fileArray[posScript], result);
 }
-char* convertStringElement(char* source, char* convertedElement, int posStart, int posEnd) {
-  char* startStr = malloc(posStart);
-  char* finishStr = malloc(strlen(source) - posEnd - 1) ;
+char *convertStringElement(char *source, char *convertedElement, int posStart, int posEnd)
+{
+  char *startStr = malloc(posStart);
+  char *finishStr = malloc(strlen(source) - posEnd - 1);
 
-  getStartString(source, startStr, posStart-1);
+  getStartString(source, startStr, posStart - 1);
   getEndString(source, finishStr, posEnd + 1);
 
-  return concats(startStr,convertedElement,finishStr);
+  return concats(startStr, convertedElement, finishStr);
   // strcpy(destination, result);
 }
 
-void convertLinkText(char* source) {
-	char arrayHtmlLinkStart1[9] = "<a href=\"" ;
-	char arrayHtmlLinkStart2[3] = "\">";
-	char arrayHtmlLinkEnd[5] = "</a>";
+void convertLinkText(char *source)
+{
+  char arrayHtmlLinkStart1[9] = "<a href=\"";
+  char arrayHtmlLinkStart2[3] = "\">";
+  char arrayHtmlLinkEnd[5] = "</a>";
 
-	char *link = malloc(Pos(source,")") - Pos(source,"](")-2);
-  char *text = malloc(Pos(source,"]") - Pos(source,"[")-1);
+  char *link = malloc(Pos(source, ")") - Pos(source, "](") - 2);
+  char *text = malloc(Pos(source, "]") - Pos(source, "[") - 1);
 
-	getSubString(source,link,Pos(source,"](")+1,Pos(source,")")-1);
-	getSubString(source,text,Pos(source,"["),Pos(source,"]")-1);
-	
-  char *convertedElement = concats(arrayHtmlLinkStart1,link,arrayHtmlLinkStart2);
-	convertedElement = concats(convertedElement,text,arrayHtmlLinkEnd);
+  getSubString(source, link, Pos(source, "](") + 1, Pos(source, ")") - 1);
+  getSubString(source, text, Pos(source, "["), Pos(source, "]") - 1);
 
-  char* result = convertStringElement(source, convertedElement, Pos(source,"["), Pos(source,")") - 1);
+  char *convertedElement = concats(arrayHtmlLinkStart1, link, arrayHtmlLinkStart2);
+  convertedElement = concats(convertedElement, text, arrayHtmlLinkEnd);
+
+  char *result = convertStringElement(source, convertedElement, Pos(source, "["), Pos(source, ")") - 1);
   strcpy(fileArray[posScript], result);
   // printf("%s\n", result);
 }
 
-void convertLink(char* source) {
-  char htmlLinkStart1[9] = "<a href=\"" ;
-	char htmlLinkStart2[3] = "\">";
-	char htmlLinkEnd[5] = "</a>";
-	char *link = malloc(Pos(source,">") - Pos(source,"<")-1);
+void replaceOnTag(char *source, char *destination, char *mask, char *tag)
+{
+  int posMask = Pos(source, mask);
+
+  char *leftStr = malloc(Pos(source, mask) + strlen(mask) - 1);
+  char *rightStr = malloc(strlen(source) - Pos(source, mask));
+
+  getStartString(source, leftStr, posMask - 1);
+  getEndString(source, rightStr, posMask + strlen(mask) - 1);
+
+  // printf("left %s\n", leftStr);
+  // printf("right %s\n", rightStr);
+
+  char *result = concats(leftStr, tag, rightStr);
+
+  strcpy(destination, result);
+
+  // printf("result %s\n", result);
+}
+
+void convertLink(char *source)
+{
+  char htmlLinkStart1[9] = "<a href=\"";
+  char htmlLinkStart2[3] = "\">";
+  char htmlLinkEnd[5] = "</a>";
+  char *link = malloc(Pos(source, ">") - Pos(source, "<") - 1);
   // char* result;
 
-	getSubString(source,link,Pos(source,"<"),Pos(source,">") -1);
+  getSubString(source, link, Pos(source, "<"), Pos(source, ">") - 1);
 
-  char* convertedElement = concats(htmlLinkStart1, link, htmlLinkStart2);
+  char *convertedElement = concats(htmlLinkStart1, link, htmlLinkStart2);
   convertedElement = concats(convertedElement, link, htmlLinkEnd);
 
-  char* result = convertStringElement(source, convertedElement, Pos(source,"<"), Pos(source,">") -1);
+  char *result = convertStringElement(source, convertedElement, Pos(source, "<"), Pos(source, ">") - 1);
   strcpy(fileArray[posScript], result);
 }
 
-void convertBold(char* source) {
-  char *textBold1 = malloc(strlen(source) - Pos(source,"**"));
-  getSubString(source,textBold1,Pos(source,"**")+1 ,strlen(source));
+void convertBold(char *source)
+{
+  char *textBold1 = malloc(strlen(source) - Pos(source, "**"));
+  getSubString(source, textBold1, Pos(source, "**") + 1, strlen(source));
 
-	if (strstr(textBold1,"**")!=NULL)
-  { 
-    char *textBold = malloc(Pos(textBold1,"**"));
-    getSubString(textBold1,textBold,-1,Pos(textBold1,"**")-1);
+  if (strstr(textBold1, "**") != NULL)
+  {
+    char *textBold = malloc(Pos(textBold1, "**"));
+    getSubString(textBold1, textBold, -1, Pos(textBold1, "**") - 1);
 
-    char *convertedElement = malloc(strlen(textBold)+17);
-	  convertedElement = concats("<strong>",textBold,"</strong>");
+    char *convertedElement = malloc(strlen(textBold) + 17);
+    convertedElement = concats("<strong>", textBold, "</strong>");
 
-    char* result = convertStringElement(source, convertedElement, Pos(source,"**"), Pos(source,textBold) + strlen(textBold));
-    strcpy(fileArray[posScript], result);
+    char *result = convertStringElement(source, convertedElement, Pos(source, "**"), Pos(source, textBold) + strlen(textBold));
+
+    if (Pos(result, "**") != -1)
+    {
+      convertBold(result);
+    }
+    else
+    {
+      strcpy(fileArray[posScript], result);
+    }
   }
-  
+  else
+  {
+    for (int i = posScript + 1; i < countStr; i++)
+    {
+      // Сюда добавить условие для проверки других блочных маркдаунов, если нашлось то не продолжаем искать
+      // if () {
+      //   break;
+      // }
+      char *str = fileArray[i];
+      if (Pos(str, "**") != -1)
+      {
+        replaceOnTag(source, fileArray[posScript], "**", "<strong>");
+        replaceOnTag(str, fileArray[i], "**", "</strong>");
+        break;
+      }
+    }
+  }
 }
-void convertImg(char *source){
-  char arrayHtmlImgStart1[10] = "<img src=\"" ;
-	char arrayHtmlImgStart2[3] = "\" ";
-	char arrayHtmlImgEnd2[3] = "\">";
-	char *path = malloc(Pos(source,")") - Pos(source,"](")-2);
-  char *text = malloc(Pos(source,"]") - Pos(source,"![")+2);
+void convertImg(char *source)
+{
+  char arrayHtmlImgStart1[10] = "<img src=\"";
+  char arrayHtmlImgStart2[3] = "\" ";
+  char arrayHtmlImgEnd2[3] = "\">";
+  char *path = malloc(Pos(source, ")") - Pos(source, "](") - 2);
+  char *text = malloc(Pos(source, "]") - Pos(source, "![") + 2);
 
-  getSubString(source,path,Pos(source,"](")+1,Pos(source,")")-1);
-  getSubString(source,text,Pos(source,"![")+1,Pos(source,"]")-1);
+  getSubString(source, path, Pos(source, "](") + 1, Pos(source, ")") - 1);
+  getSubString(source, text, Pos(source, "![") + 1, Pos(source, "]") - 1);
 
-  char *convertedElement = concats(arrayHtmlImgStart1,path,arrayHtmlImgStart2);
-  convertedElement = concats(convertedElement,"alt=\"",text);
-  convertedElement = concat(convertedElement,arrayHtmlImgEnd2);
+  char *convertedElement = concats(arrayHtmlImgStart1, path, arrayHtmlImgStart2);
+  convertedElement = concats(convertedElement, "alt=\"", text);
+  convertedElement = concat(convertedElement, arrayHtmlImgEnd2);
 
-  char* result = convertStringElement(source, convertedElement, Pos(source,"!["), Pos(source,")")-1 );
+  char *result = convertStringElement(source, convertedElement, Pos(source, "!["), Pos(source, ")") - 1);
 
   strcpy(fileArray[posScript], result);
 }
 
-void doAction(char* source, enum Action action) {
+void doAction(char *source, enum Action action)
+{
   switch (action)
   {
   case LINK_TEXT:
@@ -317,30 +376,43 @@ void doAction(char* source, enum Action action) {
     convertHeader(source);
     break;
   case LIST:
-    convertList(source);      
+    convertList(source);
   default:
     break;
   }
 }
 
-enum Action getAction(char* source) {
-  if (strstr(source,"![")!= NULL){
+enum Action getAction(char *source)
+{
+  if (strstr(source, "![") != NULL)
+  {
     return IMG;
-  }else if (strstr(source, "](") != NULL){
+  }
+  else if (strstr(source, "](") != NULL)
+  {
     return LINK_TEXT;
-  } else if (strstr(source, "<") != NULL && strstr(source, ">") != NULL) {
+  }
+  else if (strstr(source, "<") != NULL && strstr(source, ">") != NULL)
+  {
     return LINK;
-  } else if (strstr(source, "**") != NULL) {
+  }
+  else if (strstr(source, "**") != NULL)
+  {
     return BOLD;
-  } else if (valueHeader(source) > 0){
+  }
+  else if (valueHeader(source) > 0)
+  {
     return HEADER;
-  } else if (valueList(source) > 0){
+  }
+  else if (valueList(source) > 0)
+  {
     return LIST;
   }
   return NO_ACTION;
 }
 
-void runScript(char* source) {
+void runScript(char *source)
+{
   enum Action action = getAction(source);
   doAction(source, action);
 }
@@ -384,15 +456,18 @@ int main()
     //выводим считанную строку  на экран
     i++;
   }
-   while (posScript != i)
+  countStr = i;
+  while (posScript != i)
   {
     runScript(fileArray[posScript]);
     printf("%s\n", fileArray[posScript]);
     posScript++;
   }
+  // char *str = "1234512345****12345";
+  // char dest[1024] = "";
+  // replaceOnTag(str, dest, "****", "<strong>");
 
-  //char* str = "* aSDASDSADAS";
-  // char* str = "fefew [Solid](https://cldup.com/dTxpPi9lDf.thumb.png) ewfwefewf";
-  //runScript(str);
+  // char* str = "* aSDASDSADAS";
+  //  char* str = "fefew [Solid](https://cldup.com/dTxpPi9lDf.thumb.png) ewfwefewf";
+  // runScript(str);
 }
-
