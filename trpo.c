@@ -157,7 +157,30 @@ int valueHeader(char *source){
 	}
 	return value;
 }
+void convertHeader(char *source){
+  int value = valueHeader(source);
+	char *arrayHtmlHeadersStart[6];
+	arrayHtmlHeadersStart[0] = "<h1>";
+	arrayHtmlHeadersStart[1] = "<h2>";
+	arrayHtmlHeadersStart[2] = "<h3>";
+	arrayHtmlHeadersStart[3] = "<h4>";
+	arrayHtmlHeadersStart[4] = "<h5>";
+	arrayHtmlHeadersStart[5] = "<h6>";
+	char *arrayHtmlHeadersEnd[6];
+	arrayHtmlHeadersEnd[0] = "</h1>";
+	arrayHtmlHeadersEnd[1] = "</h2>";
+	arrayHtmlHeadersEnd[2] = "</h3>";
+	arrayHtmlHeadersEnd[3] = "</h4>";
+	arrayHtmlHeadersEnd[4] = "</h5>";
+	arrayHtmlHeadersEnd[5] = "</h6>";
+  size_t len = strlen(source);
+  char *text = malloc(len - value);
 
+  getSubString(source, text,value , strlen(source));
+  char *res = concats(arrayHtmlHeadersStart[value-1],text, arrayHtmlHeadersEnd[value-1]);
+  
+  printf("%s",res);
+}
 char* convertStringElement(char* source, char* convertedElement, int posStart, int posEnd) {
   char* startStr = malloc(posStart);
   char* finishStr = malloc(strlen(source) - posEnd);
@@ -255,6 +278,9 @@ void doAction(char* source, enum Action action) {
   case IMG:
     convertImg(source);
     break;
+  case HEADER:
+    convertHeader(source);
+    break;    
   default:
     break;
   }
@@ -270,7 +296,6 @@ enum Action getAction(char* source) {
   } else if (strstr(source, "**") != NULL) {
     return BOLD;
   } else if (valueHeader(source) > 0){
-    printf("header");
     return HEADER;
   }
   return NO_ACTION;
@@ -327,7 +352,7 @@ int main()
     posScript++;
   }*/
 
-  char* str = "# headsadsadsad";
+  char* str = "### headsadsadsad";
   // char* str = "fefew [Solid](https://cldup.com/dTxpPi9lDf.thumb.png) ewfwefewf";
   runScript(str);
 }
