@@ -151,6 +151,26 @@ int valueList(char *source){
 	return value;
 }
 
+void convertList(char *source){
+  int posFinish = 0;
+  int value = valueList(source);
+  int lenStart = 0;
+  char *text = malloc(strlen(source) - lenStart-2);
+  
+  if (value == 1){
+    lenStart = 3;
+  }
+  if (value == 2){
+    lenStart = 2;    
+  }
+  
+  getSubString(source,text,lenStart,strlen(source)-2);
+
+  char *result = concats("<li>",text,"</li>");
+
+  strcpy(fileArray[posScript], result);
+}
+
 int valueHeader(char *source){
   int value = 0;
   char *arrayHeaders[6];
@@ -295,7 +315,9 @@ void doAction(char* source, enum Action action) {
     break;
   case HEADER:
     convertHeader(source);
-    break;    
+    break;
+  case LIST:
+    convertList(source);      
   default:
     break;
   }
@@ -313,7 +335,6 @@ enum Action getAction(char* source) {
   } else if (valueHeader(source) > 0){
     return HEADER;
   } else if (valueList(source) > 0){
-    printf("LIST\n");
     return LIST;
   }
   return NO_ACTION;
@@ -363,15 +384,15 @@ int main()
     //выводим считанную строку  на экран
     i++;
   }
-  /* while (posScript != i)
+   while (posScript != i)
   {
     runScript(fileArray[posScript]);
-    printf("%s", fileArray[posScript]);
+    printf("%s\n", fileArray[posScript]);
     posScript++;
-  }*/
+  }
 
-  char* str = "*. ASDASDSADAS";
+  //char* str = "* aSDASDSADAS";
   // char* str = "fefew [Solid](https://cldup.com/dTxpPi9lDf.thumb.png) ewfwefewf";
-  runScript(str);
+  //runScript(str);
 }
 
