@@ -13,6 +13,7 @@ enum Action
   LINK_TEXT,
   BOLD,
   IMG,
+  HEADER,
   NO_ACTION
 };
 
@@ -137,6 +138,26 @@ char *getSubString(const char str[], char destination[], int startPos, int endPo
   return destination;
 }
 
+int valueHeader(char *source){
+  int value = 0;
+  char *arrayHeaders[6];
+  arrayHeaders[0] = "# ";
+  arrayHeaders[1] = "## ";
+  arrayHeaders[2] = "### ";
+  arrayHeaders[3] = "#### ";
+  arrayHeaders[4]= "##### ";
+  arrayHeaders[5]= "###### ";
+	for (int i = 0; i < 6; i++)
+	{
+		if ((strstr(source,arrayHeaders[i]) != NULL) && (Pos(source,arrayHeaders[i]) == 0))
+		{
+			value = i+1;
+				
+		}		
+	}
+	return value;
+}
+
 char* convertStringElement(char* source, char* convertedElement, int posStart, int posEnd) {
   char* startStr = malloc(posStart);
   char* finishStr = malloc(strlen(source) - posEnd);
@@ -248,6 +269,9 @@ enum Action getAction(char* source) {
     return LINK;
   } else if (strstr(source, "**") != NULL) {
     return BOLD;
+  } else if (valueHeader(source) > 0){
+    printf("header");
+    return HEADER;
   }
   return NO_ACTION;
 }
@@ -303,7 +327,7 @@ int main()
     posScript++;
   }*/
 
-  char* str = "asdsaddasd![Alt text](//placehold.it/150x100)asdsadasdsa";
+  char* str = "# headsadsadsad";
   // char* str = "fefew [Solid](https://cldup.com/dTxpPi9lDf.thumb.png) ewfwefewf";
   runScript(str);
 }
