@@ -14,6 +14,7 @@ enum Action
   BOLD,
   IMG,
   HEADER,
+  LIST,
   NO_ACTION
 };
 
@@ -137,6 +138,18 @@ char *getSubString(const char str[], char destination[], int startPos, int endPo
   }
   return destination;
 }
+int valueList(char *source){
+  int value = 0;
+  if ((source[0] >= '1') && (source[0] <= '9') && (Pos (source, ". ") < 2))   
+	{
+		value = 1;
+	}
+	if ((Pos(source,"+ ") < 1) ||  (Pos(source,"- ") < 1) || (Pos(source,"* ") < 1))
+	{
+		value = 2;
+	}
+	return value;
+}
 
 int valueHeader(char *source){
   int value = 0;
@@ -147,6 +160,7 @@ int valueHeader(char *source){
   arrayHeaders[3] = "#### ";
   arrayHeaders[4]= "##### ";
   arrayHeaders[5]= "###### ";
+
 	for (int i = 0; i < 6; i++)
 	{
 		if ((strstr(source,arrayHeaders[i]) != NULL) && (Pos(source,arrayHeaders[i]) == 0))
@@ -155,6 +169,7 @@ int valueHeader(char *source){
 				
 		}		
 	}
+
 	return value;
 }
 void convertHeader(char *source){
@@ -176,14 +191,14 @@ void convertHeader(char *source){
   size_t len = strlen(source);
   char *text = malloc(len - value);
 
-  getSubString(source, text,value , strlen(source));
-  char *res = concats(arrayHtmlHeadersStart[value-1],text, arrayHtmlHeadersEnd[value-1]);
+  getSubString(source, text,value , strlen(source)-2);
+  char *result = concats(arrayHtmlHeadersStart[value-1],text, arrayHtmlHeadersEnd[value-1]);
   
-  printf("%s",res);
+  strcpy(fileArray[posScript], result);
 }
 char* convertStringElement(char* source, char* convertedElement, int posStart, int posEnd) {
   char* startStr = malloc(posStart);
-  char* finishStr = malloc(strlen(source) - posEnd);
+  char* finishStr = malloc(strlen(source) - posEnd - 1) ;
 
   getStartString(source, startStr, posStart-1);
   getEndString(source, finishStr, posEnd + 1);
@@ -240,7 +255,7 @@ void convertBold(char* source) {
 	  convertedElement = concats("<strong>",textBold,"</strong>");
 
     char* result = convertStringElement(source, convertedElement, Pos(source,"**"), Pos(source,textBold) + strlen(textBold));
-    printf("%s\n",result);
+    strcpy(fileArray[posScript], result);
   }
   
 }
@@ -260,7 +275,7 @@ void convertImg(char *source){
 
   char* result = convertStringElement(source, convertedElement, Pos(source,"!["), Pos(source,")")-1 );
 
-  printf("%s\n",result);
+  strcpy(fileArray[posScript], result);
 }
 
 void doAction(char* source, enum Action action) {
@@ -297,6 +312,9 @@ enum Action getAction(char* source) {
     return BOLD;
   } else if (valueHeader(source) > 0){
     return HEADER;
+  } else if (valueList(source) > 0){
+    printf("LIST\n");
+    return LIST;
   }
   return NO_ACTION;
 }
@@ -348,11 +366,11 @@ int main()
   /* while (posScript != i)
   {
     runScript(fileArray[posScript]);
-    printf("%s\n", fileArray[posScript]);
+    printf("%s", fileArray[posScript]);
     posScript++;
   }*/
 
-  char* str = "### headsadsadsad";
+  char* str = "*. ASDASDSADAS";
   // char* str = "fefew [Solid](https://cldup.com/dTxpPi9lDf.thumb.png) ewfwefewf";
   runScript(str);
 }
