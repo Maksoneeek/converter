@@ -40,7 +40,6 @@ char *concat(char *s1, char *s2)
 
 char *concats(char *s1, char *s2, char *s3)
 {
-
   size_t len1 = strlen(s1);
   size_t len2 = strlen(s2);
   size_t len3 = strlen(s3);
@@ -147,19 +146,19 @@ char *getSubString(const char str[], char destination[], int startPos, int endPo
 }
 int ValueCitation(char *source)
 {
-	int res = 0;
-	char *arrayCitations[4];
+  int res = 0;
+  char *arrayCitations[4];
   arrayCitations[0] = "> ";
   arrayCitations[1] = ">> ";
   arrayCitations[2] = ">>> ";
   arrayCitations[3] = ">>>> ";
   arrayCitations[4] = ">>>>> ";
-  for (int i = 0; i<5;i++)
+  for (int i = 0; i < 5; i++)
   {
-  	if (strstr(source,arrayCitations[i]) != NULL)
-  	{
-  		res=i+1;
-  	}
+    if (strstr(source, arrayCitations[i]) != NULL)
+    {
+      res = i + 1;
+    }
   }
   return res;
 }
@@ -171,28 +170,26 @@ void convertCitation(char *source)
   getEndString(source, text, value);
   char *convertedElement = concat("<blockquote>", text);
 
-  for (int i = 1;i < value; i++)
+  for (int i = 1; i < value; i++)
   {
     convertedElement = concat("<blockquote>", convertedElement);
   }
+  strcpy(fileArray[posScript], convertedElement);
 
   for (int i = posScript + 1; i < countStr; i++)
   {
-    //printf("длина некст строки - %ld\n",strlen(fileArray[i]));
-    int count = ValueCitation(fileArray[i]); 
+    int count = ValueCitation(fileArray[i]);
     if (count != 0)
     {
-      printf("1");
       char *str = malloc(strlen(fileArray[i]) - count);
-      getEndString(fileArray[i],str,count);
-      strcpy(fileArray[i],str);
-    }else if (strlen(fileArray[i]) == 1)
+      getEndString(fileArray[i], str, count);
+      strcpy(fileArray[i], str);
+    }
+    else if (strlen(fileArray[i]) == 1)
     {
-      printf("2");
-      for (int i = 0;i < value; i++)
+      for (int j = 0; j < value; j++)
       {
-        
-        strcpy(fileArray[i], concat(fileArray[i],"</blockquote>"));
+        strcpy(fileArray[i], concat(fileArray[i], "</blockquote>"));
       }
       break;
     }
@@ -282,7 +279,7 @@ void convertHeader(char *source)
 }
 char *convertStringElement(char *source, char *convertedElement, int posStart, int posEnd)
 {
-  char *startStr = malloc(posStart);
+  char *startStr = malloc(posStart + 1); // Если что тут не было +1
   char *finishStr = malloc(strlen(source) - posEnd - 1);
 
   getStartString(source, startStr, posStart - 1);
@@ -309,6 +306,11 @@ void convertLinkText(char *source)
 
   char *result = convertStringElement(source, convertedElement, Pos(source, "["), Pos(source, ")") - 1);
   strcpy(fileArray[posScript], result);
+
+  if (strstr(source, "](") != NULL)
+  {
+    convertLinkText(source);
+  }
   // printf("%s\n", result);
 }
 
@@ -398,17 +400,23 @@ void convertImg(char *source)
   char arrayHtmlImgStart1[10] = "<img src=\"";
   char arrayHtmlImgStart2[3] = "\" ";
   char arrayHtmlImgEnd2[3] = "\">";
-  char *path = malloc(Pos(source, ")") - Pos(source, "](") - 2);
-  char *text = malloc(Pos(source, "]") - Pos(source, "![") + 2);
+  char *left = malloc(Pos(source, "![") + 1);
+  char *right = malloc(strlen(source) - Pos(source, "![") + 1);
 
-  getSubString(source, path, Pos(source, "](") + 1, Pos(source, ")") - 1);
-  getSubString(source, text, Pos(source, "![") + 1, Pos(source, "]") - 1);
+  getStartString(source, left, Pos(source, "![") + 1);
+  getEndString(source, right, Pos(source, "![") + 1);
+
+  char *path = malloc(Pos(right, ")") - Pos(right, "](") - 2);
+  char *text = malloc(Pos(right, "]") - Pos(right, "![") + 2);
+
+  getSubString(right, path, Pos(right, "](") + 1, Pos(right, ")") - 1);
+  getSubString(right, text, Pos(right, "!["), Pos(right, "]") - 1);
 
   char *convertedElement = concats(arrayHtmlImgStart1, path, arrayHtmlImgStart2);
   convertedElement = concats(convertedElement, "alt=\"", text);
   convertedElement = concat(convertedElement, arrayHtmlImgEnd2);
 
-  char *result = convertStringElement(source, convertedElement, Pos(source, "!["), Pos(source, ")") - 1);
+  char *result = convertStringElement(source, convertedElement, Pos(source, "!["), Pos(right, ")") + strlen(left) - 1);
 
   strcpy(fileArray[posScript], result);
 }
@@ -437,13 +445,13 @@ void doAction(char *source, enum Action action)
     break;
   case HEADER:
     convertHeader(source);
-    break;   
+    break;
   // case LIST:
   //   convertList(source);
   //   break;
   case CITATION:
     convertCitation(source);
-    break;  
+    break;
   default:
     break;
   }
@@ -490,11 +498,19 @@ enum Action getAction(char *source)
   return NO_ACTION;
 }
 
+// void runScript(char *source)
+// {
+//   enum Action action = getAction(source);
+//   // enum Action action = CITATION;
+//   doAction(source, action);
+// }
+
 void runScript(char *source)
 {
-  enum Action action = getAction(source);
-  //enum Action action = CITATION;
-  doAction(source, action);
+  convertImg(source);
+  // printf("result %s\n", fileArray[posScript]);
+  // printf("source %s\n", source);
+  convertLinkText(source);
 }
 
 int main()
@@ -540,14 +556,14 @@ int main()
   while (posScript != i)
   {
     runScript(fileArray[posScript]);
-    //printf("%s\n", fileArray[posScript]);
+    printf("%s\n", fileArray[posScript]);
     posScript++;
   }
   // char *str = "1234512345****12345";
   // char dest[1024] = "";
   // replaceOnTag(str, dest, "****", "<strong>");
 
-   //char* str = "**dasdasdsa**";
+  // char* str = "**dasdasdsa**";
   //  char* str = "fefew [Solid](https://cldup.com/dTxpPi9lDf.thumb.png) ewfwefewf";
   // runScript(str);
 }
