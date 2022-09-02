@@ -156,12 +156,47 @@ int ValueCitation(char *source)
   arrayCitations[4] = ">>>>> ";
   for (int i = 0; i<5;i++)
   {
-  	if (strstr(arr,arrayCitations[i]) != NULL)
+  	if (strstr(source,arrayCitations[i]) != NULL)
   	{
   		res=i+1;
   	}
   }
   return res;
+}
+void convertCitation(char *source)
+{
+  int value = ValueCitation(source);
+  char *text = malloc(strlen(source) - value);
+
+  getEndString(source, text, value);
+  char *convertedElement = concat("<blockquote>", text);
+
+  for (int i = 1;i < value; i++)
+  {
+    convertedElement = concat("<blockquote>", convertedElement);
+  }
+
+  for (int i = posScript + 1; i < countStr; i++)
+  {
+    //printf("длина некст строки - %ld\n",strlen(fileArray[i]));
+    int count = ValueCitation(fileArray[i]); 
+    if (count != 0)
+    {
+      printf("1");
+      char *str = malloc(strlen(fileArray[i]) - count);
+      getEndString(fileArray[i],str,count);
+      strcpy(fileArray[i],str);
+    }else if (strlen(fileArray[i]) == 1)
+    {
+      printf("2");
+      for (int i = 0;i < value; i++)
+      {
+        
+        strcpy(fileArray[i], concat(fileArray[i],"</blockquote>"));
+      }
+      break;
+    }
+  }
 }
 int valueList(char *source)
 {
@@ -179,7 +214,6 @@ int valueList(char *source)
 
 void convertList(char *source)
 {
-  int posFinish = 0;
   int value = valueList(source);
   int lenStart = 0;
   char *text = malloc(strlen(source) - lenStart - 2);
@@ -403,9 +437,13 @@ void doAction(char *source, enum Action action)
     break;
   case HEADER:
     convertHeader(source);
-    break;
-  case LIST:
-    convertList(source);
+    break;   
+  // case LIST:
+  //   convertList(source);
+  //   break;
+  case CITATION:
+    convertCitation(source);
+    break;  
   default:
     break;
   }
@@ -441,21 +479,21 @@ enum Action getAction(char *source)
   {
     return HEADER;
   }
-  else if (valueList(source) > 0)
-  {
-    return LIST;
-  }
   else if (ValueCitation(source) > 0)
   {
     return CITATION;
   }
+  // else if (valueList(source) > 0)
+  // {
+  //   return LIST;
+  // }
   return NO_ACTION;
 }
 
 void runScript(char *source)
 {
-  // enum Action action = getAction(source);
-  enum Action action = BOLD_ITALIC;
+  enum Action action = getAction(source);
+  //enum Action action = CITATION;
   doAction(source, action);
 }
 
@@ -502,14 +540,14 @@ int main()
   while (posScript != i)
   {
     runScript(fileArray[posScript]);
-    printf("%s\n", fileArray[posScript]);
+    //printf("%s\n", fileArray[posScript]);
     posScript++;
   }
   // char *str = "1234512345****12345";
   // char dest[1024] = "";
   // replaceOnTag(str, dest, "****", "<strong>");
 
-  // char* str = "* aSDASDSADAS";
+   //char* str = "**dasdasdsa**";
   //  char* str = "fefew [Solid](https://cldup.com/dTxpPi9lDf.thumb.png) ewfwefewf";
   // runScript(str);
 }
