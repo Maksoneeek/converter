@@ -13,6 +13,8 @@ enum Action
   LINK,
   LINK_TEXT,
   BOLD,
+  ITALIC,
+  BOLD_ITALIC,
   IMG,
   HEADER,
   LIST,
@@ -294,24 +296,25 @@ void convertLink(char *source)
   strcpy(fileArray[posScript], result);
 }
 
-void convertBold(char *source)
+void convertSelectionText(char *source, char *mask, char *openTag, char *closeTag)
 {
-  char *textBold1 = malloc(strlen(source) - Pos(source, "**"));
-  getSubString(source, textBold1, Pos(source, "**") + 1, strlen(source));
+  char *text1 = malloc(strlen(source) - Pos(source, mask));
+  getSubString(source, text1, Pos(source, mask) + strlen(mask) - 1, strlen(source));
 
-  if (strstr(textBold1, "**") != NULL)
+  if (strstr(text1, mask) != NULL)
   {
-    char *textBold = malloc(Pos(textBold1, "**"));
-    getSubString(textBold1, textBold, -1, Pos(textBold1, "**") - 1);
+    char *text = malloc(Pos(text1, mask));
+    getSubString(text1, text, -1, Pos(text1, mask) - 1);
 
-    char *convertedElement = malloc(strlen(textBold) + 17);
-    convertedElement = concats("<strong>", textBold, "</strong>");
+    int lengthTags = strlen(openTag) + strlen(closeTag);
+    char *convertedElement = malloc(strlen(text) + lengthTags);
+    convertedElement = concats(openTag, text, closeTag);
 
-    char *result = convertStringElement(source, convertedElement, Pos(source, "**"), Pos(source, textBold) + strlen(textBold));
+    char *result = convertStringElement(source, convertedElement, Pos(source, mask), Pos(source, text) + strlen(text) + strlen(mask) - 2);
 
-    if (Pos(result, "**") != -1)
+    if (Pos(result, mask) != -1)
     {
-      convertBold(result);
+      convertSelectionText(result, mask, openTag, closeTag);
     }
     else
     {
@@ -327,15 +330,16 @@ void convertBold(char *source)
       //   break;
       // }
       char *str = fileArray[i];
-      if (Pos(str, "**") != -1)
+      if (Pos(str, mask) != -1)
       {
-        replaceOnTag(source, fileArray[posScript], "**", "<strong>");
-        replaceOnTag(str, fileArray[i], "**", "</strong>");
+        replaceOnTag(source, fileArray[posScript], mask, openTag);
+        replaceOnTag(str, fileArray[i], mask, closeTag);
         break;
       }
     }
   }
 }
+
 void convertImg(char *source)
 {
   char arrayHtmlImgStart1[10] = "<img src=\"";
@@ -360,14 +364,20 @@ void doAction(char *source, enum Action action)
 {
   switch (action)
   {
-  case LINK_TEXT:
-    convertLinkText(source);
-    break;
-  case LINK:
-    convertLink(source);
+  // case LINK_TEXT:
+  //   convertLinkText(source);
+  //   break;
+  // case LINK:
+  //   convertLink(source);
+  //   break;
+  case BOLD_ITALIC:
+    convertSelectionText(source, "***", "<strong><italic>", "</italic></strong>");
     break;
   case BOLD:
-    convertBold(source);
+    convertSelectionText(source, "**", "<strong>", "</strong>");
+    break;
+  case ITALIC:
+    convertSelectionText(source, "*", "<italic>", "</italic>");
     break;
   case IMG:
     convertImg(source);
@@ -396,9 +406,17 @@ enum Action getAction(char *source)
   {
     return LINK;
   }
+  else if (strstr(source, "***") != NULL)
+  {
+    return BOLD_ITALIC;
+  }
   else if (strstr(source, "**") != NULL)
   {
     return BOLD;
+  }
+  else if (strstr(source, "*") != NULL)
+  {
+    return ITALIC;
   }
   else if (valueHeader(source) > 0)
   {
@@ -413,7 +431,8 @@ enum Action getAction(char *source)
 
 void runScript(char *source)
 {
-  enum Action action = getAction(source);
+  // enum Action action = getAction(source);
+  enum Action action = BOLD_ITALIC;
   doAction(source, action);
 }
 
