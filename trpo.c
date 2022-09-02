@@ -18,6 +18,7 @@ enum Action
   IMG,
   HEADER,
   LIST,
+  CITATION,
   NO_ACTION
 };
 
@@ -143,6 +144,24 @@ char *getSubString(const char str[], char destination[], int startPos, int endPo
     i++;
   }
   return destination;
+}
+int ValueCitation(char *source)
+{
+	int res = 0;
+	char *arrayCitations[4];
+  arrayCitations[0] = "> ";
+  arrayCitations[1] = ">> ";
+  arrayCitations[2] = ">>> ";
+  arrayCitations[3] = ">>>> ";
+  arrayCitations[4] = ">>>>> ";
+  for (int i = 0; i<5;i++)
+  {
+  	if (strstr(arr,arrayCitations[i]) != NULL)
+  	{
+  		res=i+1;
+  	}
+  }
+  return res;
 }
 int valueList(char *source)
 {
@@ -425,6 +444,10 @@ enum Action getAction(char *source)
   else if (valueList(source) > 0)
   {
     return LIST;
+  }
+  else if (ValueCitation(source) > 0)
+  {
+    return CITATION;
   }
   return NO_ACTION;
 }
