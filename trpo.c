@@ -198,37 +198,67 @@ void convertCitation(char *source)
 int valueList(char *source)
 {
   int value = 0;
-  if ((source[0] >= '1') && (source[0] <= '9') && (Pos(source, ". ") < 2))
+  if (strlen(source)>2)
   {
-    value = 1;
-  }
-  if ((Pos(source, "+ ") < 1) || (Pos(source, "- ") < 1) || (Pos(source, "* ") < 1))
-  {
-    value = 2;
-  }
+    if ((source[0] >= '1') && (source[0] <= '9') && (Pos(source, ". ") < 2))
+    {
+      value = 2;
+    }
+    if (((Pos(source, "+ ") < 1)&&(strstr(source,"+ ")!= NULL)) || ((Pos(source, "- ") < 1)&&(strstr(source,"- ")!= NULL)) || ((Pos(source, "* ") < 1)&&(strstr(source,"* ")!= NULL)))
+    {
+      value = 1;
+    }
+  }  
   return value;
 }
 
 void convertList(char *source)
 {
   int value = valueList(source);
-  int lenStart = 0;
-  char *text = malloc(strlen(source) - lenStart - 2);
-
-  if (value == 1)
+  if (value > 0)
   {
-    lenStart = 3;
-  }
-  if (value == 2)
-  {
-    lenStart = 2;
-  }
+    char *text = malloc(strlen(source) - value);
+    getSubString(source, text, value, Pos(source,"\n") - 1);
+  
+    char *convertedElement = concats("<li>", text, "</li>\n");
 
-  getSubString(source, text, lenStart, strlen(source) - 2);
+    if (value == 1)
+    {
+      convertedElement = concat("<ul>\n",convertedElement) ;
+    }
+    if (value == 2)
+    {
+      convertedElement = concat("<ol>\n",convertedElement) ;
+    }
 
-  char *result = concats("<li>", text, "</li>");
+    strcpy(fileArray[posScript], convertedElement);
+    
+    for (int i = posScript + 1; i < countStr; i++)
+    { 
+      if ((valueList(fileArray[i])!= value)||(strlen(fileArray[i]) == 1))
+      {
+        if (value == 1)
+        {
+          strcpy(fileArray[i-1], concat(fileArray[i-1],"</ul>\n"));
+        }
 
-  strcpy(fileArray[posScript], result);
+        if (value == 2)
+        {
+          strcpy(fileArray[i-1],concat(fileArray[i-1],"</ol>\n")) ;
+        } 
+        break;
+      }
+      else if (valueList(fileArray[i])==value)
+      {
+        char *str = malloc(strlen(fileArray[i]) - value);
+        getSubString(fileArray[i], str, value, Pos(fileArray[i],"\n") - 1);
+        str = concats("<li>",str,"</li>\n");
+        
+        strcpy(fileArray[i],str);
+      }
+    }
+
+  }  
 }
 
 int valueHeader(char *source)
@@ -288,8 +318,6 @@ char *convertStringElement(char *source, char *convertedElement, int posStart, i
 
   getStartString(source, startStr, posStart - 1);
   getEndString(source, finishStr, posEnd + 1);
-  printf("startstr %s\n",startStr);
-  printf("startstr %s\n",finishStr);
   return concats(startStr, convertedElement, finishStr);
   // strcpy(destination, result);
 }
@@ -530,6 +558,7 @@ void runScript(char *source)
   // printf("source %s\n", source);
   convertLinkText(source);
   convertHeader(source,valueHeader(source));
+  convertList(source);
 }
 
 int main()
