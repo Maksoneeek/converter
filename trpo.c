@@ -155,7 +155,7 @@ int ValueCitation(char *source)
   arrayCitations[4] = ">>>>> ";
   for (int i = 0; i < 5; i++)
   {
-    if (strstr(source, arrayCitations[i]) != NULL)
+    if ((strstr(source, arrayCitations[i]) != NULL) && (Pos(source, arrayCitations[i]) == 0))
     {
       res = i + 1;
     }
@@ -170,11 +170,11 @@ void convertCitation(char *source)
     char *text = malloc(strlen(source) - value);
 
     getEndString(source, text, value);
-    char *convertedElement = concat("<blockquote>", text);
+    char *convertedElement = concat("<blockquote>\n", text);
 
     for (int i = 1; i < value; i++)
     {
-      convertedElement = concat("<blockquote>", convertedElement);
+      convertedElement = concat("<blockquote>\n", convertedElement);
     }
     strcpy(fileArray[posScript], convertedElement);
 
@@ -185,13 +185,21 @@ void convertCitation(char *source)
       {
         char *str = malloc(strlen(fileArray[i]) - count);
         getEndString(fileArray[i], str, count);
+        if (count > value)
+        {
+          for(int j = 0; j < count - value;j++)
+          {
+            str = concat("<blockquote>\n", str);
+          }
+          value = count;  
+        }
         strcpy(fileArray[i], str);
       }
       else if (strlen(fileArray[i]) == 1)
       {
         for (int j = 0; j < value; j++)
         {
-          strcpy(fileArray[i], concat(fileArray[i], "</blockquote>"));
+          strcpy(fileArray[i-1], concat(fileArray[i-1], "</blockquote>\n"));
         }
         break;
       }
@@ -308,7 +316,7 @@ void convertHeader(char *source,int value)
     size_t len = strlen(source);
     char *text = malloc(len - value);
 
-    getSubString(source, text, value, strlen(source) - 2);
+    getSubString(source, text, value, strlen(source) -2);
     char *result = concats(arrayHtmlHeadersStart[value - 1], text, arrayHtmlHeadersEnd[value - 1]);
 
     strcpy(fileArray[posScript], result);
@@ -568,7 +576,7 @@ void runScript(char *source)
   convertSelectionText(source, "**", "<strong>", "</strong>");
   convertSelectionText(source, "*", "<italic>", "</italic>");
   convertHeader(source,valueHeader(source));
-
+  convertCitation(source);
 }
 
 int main()
