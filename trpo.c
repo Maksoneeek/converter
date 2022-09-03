@@ -164,37 +164,40 @@ int ValueCitation(char *source)
 }
 void convertCitation(char *source)
 {
-  int value = ValueCitation(source);
-  char *text = malloc(strlen(source) - value);
-
-  getEndString(source, text, value);
-  char *convertedElement = concat("<blockquote>", text);
-
-  for (int i = 1; i < value; i++)
+  if (strstr(source,"> ")!= NULL)
   {
-    convertedElement = concat("<blockquote>", convertedElement);
-  }
-  strcpy(fileArray[posScript], convertedElement);
+    int value = ValueCitation(source);
+    char *text = malloc(strlen(source) - value);
 
-  for (int i = posScript + 1; i < countStr; i++)
-  {
-    int count = ValueCitation(fileArray[i]);
-    if (count != 0)
+    getEndString(source, text, value);
+    char *convertedElement = concat("<blockquote>", text);
+
+    for (int i = 1; i < value; i++)
     {
-      char *str = malloc(strlen(fileArray[i]) - count);
-      getEndString(fileArray[i], str, count);
-      strcpy(fileArray[i], str);
+      convertedElement = concat("<blockquote>", convertedElement);
     }
-    else if (strlen(fileArray[i]) == 1)
+    strcpy(fileArray[posScript], convertedElement);
+
+    for (int i = posScript + 1; i < countStr; i++)
     {
-      for (int j = 0; j < value; j++)
+      int count = ValueCitation(fileArray[i]);
+      if (count != 0)
       {
-        strcpy(fileArray[i], concat(fileArray[i], "</blockquote>"));
+        char *str = malloc(strlen(fileArray[i]) - count);
+        getEndString(fileArray[i], str, count);
+        strcpy(fileArray[i], str);
       }
-      break;
+      else if (strlen(fileArray[i]) == 1)
+      {
+        for (int j = 0; j < value; j++)
+        {
+          strcpy(fileArray[i], concat(fileArray[i], "</blockquote>"));
+        }
+        break;
+      }
     }
-  }
-}
+  }  
+} 
 int valueList(char *source)
 {
   int value = 0;
@@ -232,7 +235,7 @@ void convertList(char *source)
     }
 
     strcpy(fileArray[posScript], convertedElement);
-    
+
     for (int i = posScript + 1; i < countStr; i++)
     { 
       if ((valueList(fileArray[i])!= value)||(strlen(fileArray[i]) == 1))
@@ -296,12 +299,12 @@ void convertHeader(char *source,int value)
     arrayHtmlHeadersStart[4] = "<h5>";
     arrayHtmlHeadersStart[5] = "<h6>";
     char *arrayHtmlHeadersEnd[6];
-    arrayHtmlHeadersEnd[0] = "</h1>";
-    arrayHtmlHeadersEnd[1] = "</h2>";
-    arrayHtmlHeadersEnd[2] = "</h3>";
-    arrayHtmlHeadersEnd[3] = "</h4>";
-    arrayHtmlHeadersEnd[4] = "</h5>";
-    arrayHtmlHeadersEnd[5] = "</h6>";
+    arrayHtmlHeadersEnd[0] = "</h1>\n";
+    arrayHtmlHeadersEnd[1] = "</h2>\n";
+    arrayHtmlHeadersEnd[2] = "</h3>\n";
+    arrayHtmlHeadersEnd[3] = "</h4>\n";
+    arrayHtmlHeadersEnd[4] = "</h5>\n";
+    arrayHtmlHeadersEnd[5] = "</h6>\n";
     size_t len = strlen(source);
     char *text = malloc(len - value);
 
@@ -389,46 +392,49 @@ void convertLink(char *source)
 
 void convertSelectionText(char *source, char *mask, char *openTag, char *closeTag)
 {
-  char *text1 = malloc(strlen(source) - Pos(source, mask));
-  getSubString(source, text1, Pos(source, mask) + strlen(mask) - 1, strlen(source));
-
-  if (strstr(text1, mask) != NULL)
+  if (strstr(source,mask)!=NULL)
   {
-    char *text = malloc(Pos(text1, mask));
-    getSubString(text1, text, -1, Pos(text1, mask) - 1);
+    char *text1 = malloc(strlen(source) - Pos(source, mask));
+    getSubString(source, text1, Pos(source, mask) + strlen(mask) - 1, strlen(source));
 
-    int lengthTags = strlen(openTag) + strlen(closeTag);
-    char *convertedElement = malloc(strlen(text) + lengthTags);
-    convertedElement = concats(openTag, text, closeTag);
-
-    char *result = convertStringElement(source, convertedElement, Pos(source, mask), Pos(source, text) + strlen(text) + strlen(mask) - 2);
-
-    if (Pos(result, mask) != -1)
+    if (strstr(text1, mask) != NULL)
     {
-      convertSelectionText(result, mask, openTag, closeTag);
+      char *text = malloc(Pos(text1, mask));
+      getSubString(text1, text, -1, Pos(text1, mask) - 1);
+
+      int lengthTags = strlen(openTag) + strlen(closeTag);
+      char *convertedElement = malloc(strlen(text) + lengthTags);
+      convertedElement = concats(openTag, text, closeTag);
+
+      char *result = convertStringElement(source, convertedElement, Pos(source, mask), Pos(source, text) + strlen(text) + strlen(mask) - 2);
+
+      if (Pos(result, mask) != -1)
+      {
+        convertSelectionText(result, mask, openTag, closeTag);
+      }
+      else
+      {
+        strcpy(fileArray[posScript], result);
+      }
     }
     else
     {
-      strcpy(fileArray[posScript], result);
-    }
-  }
-  else
-  {
-    for (int i = posScript + 1; i < countStr; i++)
-    {
-      // Сюда добавить условие для проверки других блочных маркдаунов, если нашлось то не продолжаем искать
-      // if () {
-      //   break;
-      // }
-      char *str = fileArray[i];
-      if (Pos(str, mask) != -1)
+      for (int i = posScript + 1; i < countStr; i++)
       {
-        replaceOnTag(source, fileArray[posScript], mask, openTag);
-        replaceOnTag(str, fileArray[i], mask, closeTag);
-        break;
+        // Сюда добавить условие для проверки других блочных маркдаунов, если нашлось то не продолжаем искать
+        if ((ValueCitation(fileArray[i]) > 0) || (strstr(fileArray[i],"<li>")!=NULL) || (valueHeader(fileArray[i]) > 0)|| (strlen(fileArray[i]) == 1)) {
+          break;
+        }
+        char *str = fileArray[i];
+        if (Pos(str, mask) != -1)
+        {
+          replaceOnTag(source, fileArray[posScript], mask, openTag);
+          replaceOnTag(str, fileArray[i], mask, closeTag);
+          break;
+        }
       }
     }
-  }
+  }  
 }
 
 void convertImg(char *source)
@@ -557,8 +563,12 @@ void runScript(char *source)
   // printf("result %s\n", fileArray[posScript]);
   // printf("source %s\n", source);
   convertLinkText(source);
-  convertHeader(source,valueHeader(source));
   convertList(source);
+  convertSelectionText(source, "***", "<strong><italic>", "</italic></strong>");
+  convertSelectionText(source, "**", "<strong>", "</strong>");
+  convertSelectionText(source, "*", "<italic>", "</italic>");
+  convertHeader(source,valueHeader(source));
+
 }
 
 int main()
