@@ -1,1 +1,1 @@
-12345 [Mermaid](https://mermaidjs.github.io/). ![Mermaid](https://mermaidjs.github.io/) 678910 [Mermaid](https://mermaidjs.github.io/) 12345 [Mermaid](https://mermaidjs.github.io/)
+![Mermaid](https://mermaidjs.github.io/)[Mermaid](https://mermaidjs.github.io/)![Mermaid](https://mermaidjs.github.io/) 678910 ![Mermaid](https://mermaidjs.github.io/)![Mermaid](https://mermaidjs.github.io/)

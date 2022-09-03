@@ -255,6 +255,7 @@ int valueHeader(char *source)
 void convertHeader(char *source)
 {
   int value = valueHeader(source);
+  //printf("JOPA");
   char *arrayHtmlHeadersStart[6];
   arrayHtmlHeadersStart[0] = "<h1>";
   arrayHtmlHeadersStart[1] = "<h2>";
@@ -397,21 +398,23 @@ void convertSelectionText(char *source, char *mask, char *openTag, char *closeTa
 
 void convertImg(char *source)
 {
+  // if (strstr(source,"!["))
+  // {
+  // }  
   char arrayHtmlImgStart1[10] = "<img src=\"";
   char arrayHtmlImgStart2[3] = "\" ";
   char arrayHtmlImgEnd2[3] = "\">";
-  char *left = malloc(Pos(source, "![") + 1);
+  char *left = malloc(Pos(source, "![") );
   char *right = malloc(strlen(source) - Pos(source, "![") + 1);
 
   getStartString(source, left, Pos(source, "![") + 1);
   getEndString(source, right, Pos(source, "![") + 1);
-
   char *path = malloc(Pos(right, ")") - Pos(right, "](") - 2);
-  char *text = malloc(Pos(right, "]") - Pos(right, "![") + 2);
-
+  char *text = malloc(Pos(right, "]"));
+  
   getSubString(right, path, Pos(right, "](") + 1, Pos(right, ")") - 1);
-  getSubString(right, text, Pos(right, "!["), Pos(right, "]") - 1);
-
+  getSubString(right, text, -1, Pos(right, "]") - 1);
+  
   char *convertedElement = concats(arrayHtmlImgStart1, path, arrayHtmlImgStart2);
   convertedElement = concats(convertedElement, "alt=\"", text);
   convertedElement = concat(convertedElement, arrayHtmlImgEnd2);
@@ -419,6 +422,11 @@ void convertImg(char *source)
   char *result = convertStringElement(source, convertedElement, Pos(source, "!["), Pos(right, ")") + strlen(left) - 1);
 
   strcpy(fileArray[posScript], result);
+
+  if (strstr(source, "![") != NULL)
+  {
+    convertImg(source);
+  }
 }
 
 void doAction(char *source, enum Action action)
@@ -556,7 +564,7 @@ int main()
   while (posScript != i)
   {
     runScript(fileArray[posScript]);
-    printf("%s\n", fileArray[posScript]);
+    printf("%s", fileArray[posScript]);
     posScript++;
   }
   // char *str = "1234512345****12345";
